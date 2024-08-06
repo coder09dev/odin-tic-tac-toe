@@ -12,11 +12,15 @@ const GameBoard = (function (size) {
 
     const getBoard = () => board;
     const getSize = () => size;
-    const displayBoard = () => console.log(board);
+    const displayBoard = () => {
+        board.map((row) => console.log(row))
+    };
 
-    const updatePosition = (row, cell, player) => {
-        if (board[row][cell]) throw new Error(`Cell ${row},${cell} already filled`);
-        board[row][cell] = player;
+    const updatePosition = (row, col, symbol) => {
+        if (row >= size) throw new Error(`Invalid row ${row}`);
+        if (col >= size) throw new Error(`Invalid col ${col}`);
+        if (board[row][col]) throw new Error(`Cell ${row},${col} already filled`);
+        board[row][col] = symbol;
     }
 
     return { 

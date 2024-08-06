@@ -1,3 +1,4 @@
+const prompt = require('prompt-sync')({sigint: true});
 const GameBoard = require('./Gameboard');
 const createPlayer = require('./player');
 
@@ -9,18 +10,27 @@ const Game = (function () {
     const player2 = createPlayer('bar', 'Y');
 
     const play = () => {
-        let count = boardSize * boardSize;
-        let turn = true;
-        while (count--) {
-            let player = (turn) ? player1 : player2;
-            // TODO: fix  -> update row and cell for each turn
-            player.move(1, 1);
-            GameBoard.displayBoard();
-            if (isWin(player)) {
-                console.log(`Player ${player.getName()} WON!!!`);
-                return;
+        let turn = 1;
+        let totalTurns = boardSize * boardSize;
+        let r, c;
+        while (turn <= totalTurns) {
+            let player = (turn % 2) ? player1 : player2;
+            console.log(`Turn ${turn}: Player '${player.getName()}'`);
+            r = Number(prompt('Enter row: '));
+            c = Number(prompt('Enter col: '));
+
+            try {
+                player.move(r, c);
+                GameBoard.displayBoard();
+
+                if (isWin(player)) {
+                    console.log(`Player '${player.getName()}' WON!!!`);
+                    return;
+                }
+                turn++;
+            } catch(err) {
+                console.log(err);
             }
-            turn = !turn;
         }
         if (isDraw()) {
             console.log(`It's a DRAW`);
@@ -43,6 +53,7 @@ const Game = (function () {
     const checkCols = (player) => {
         let col = '';
         for (let i = 0; i < boardSize; i++) {
+            col = '';
             for (let j = 0; j < boardSize; j++) {
                 col += board[j][i];
             }
@@ -56,7 +67,9 @@ const Game = (function () {
         let diag = '';
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
-                diag += board[i][i];
+                if (i === j)  {
+                    diag += board[i][i];
+                }
             }
         }
         return (diag === isSameSymbol(player.getSymbol()));
@@ -64,13 +77,14 @@ const Game = (function () {
 
     const checkSecondaryDiag = (player) => {
         let diag = '';
-        for (let i = boardSize; i >= 0; i--) {
+        for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
-                if (i === j || 
-                    ((i === boardSize - 1) && (j === 0)) || 
-                    ((i === 0) && (j === boardSize - 1))
-                ) {
-                    diag += board[i][j];
+                if ((i === 0) && (j === boardSize - 1)) {
+                    if (board[i][j]) diag += board[i][j];
+                } else if ((j === 0) && (i === boardSize - 1)) {
+                    if (board[i][j]) diag += board[i][j];
+                } else if (i === j && i !== 0 &&  j !== 0 && i !== boardSize - 1 &&  j !== boardSize - 1) {
+                    if (board[i][j]) diag += board[i][j];
                 }
             }
         }
@@ -87,8 +101,8 @@ const Game = (function () {
     const isDraw = () => {
         let count;
         for (let i = 0; i < boardSize; i++) {
-            count = board[i].reduce((count, cell) => {
-                if (cell) count += 1;
+            count = board[i].reduce((count, col) => {
+                if (col) count += 1;
                 return count;
             }, 0);
         }
